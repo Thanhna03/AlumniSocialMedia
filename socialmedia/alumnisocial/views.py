@@ -83,7 +83,7 @@ class UserViewSet(viewsets.ViewSet,
         return Response(serializers.PostSerializer(post).data, status=status.HTTP_201_CREATED)
 
     # lấy tất cả bài đăng từ users được gui thông qua {id}
-    # chỉnh detail = True khi muoon nhập {id}
+    # chỉnh detail = True khi muon nhập {id}
     @action(methods=['get'], detail=True, url_path='list_posts')
     def get_list_posts(self, request, pk):
         user = User.objects.get(pk=pk)

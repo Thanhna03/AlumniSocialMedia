@@ -6,7 +6,7 @@ from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.db.models import Count
 from django.contrib.auth.models import User
-# from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 
 
 class User(AbstractUser):
