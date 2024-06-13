@@ -1,0 +1,56 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+    <h1>THỐNG KÊ CÁC CÂU HỎI THEO BÀI KHẢO SÁT</h1>
+
+    <ul>
+        {% for c in survey_stats %}
+            <li><strong>{{ c.id }} - {{ c.title }}</strong> có {{ c.c }} câu hỏi</li>
+        {% endfor %}
+    </ul>
+
+    <canvas id="myChart"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Biến để lưu labels và data cho biểu đồ
+        let labels = [];
+        let data = [];
+
+        // Lấy dữ liệu từ Django context
+        {% for c in survey_stats %}
+            labels.push('{{ c.title }}');
+            data.push({{ c.c }});
+        {% endfor %}
+
+        window.onload = function() {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar', // loại biểu đồ
+                data: {
+                    labels: labels, // tiêu đề các cột
+                    datasets: [{
+                        label: 'Số lượng câu hỏi',
+                        data: data, // dữ liệu các cột
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Màu nền cột
+                        borderColor: 'rgba(75, 192, 192, 1)', // Màu viền cột
+                        borderWidth: 1 // Độ rộng viền cột
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true // bắt đầu từ 0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true, // Hiển thị chú thích
+                            position: 'top' // Vị trí của chú thích
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+{% endblock %}
