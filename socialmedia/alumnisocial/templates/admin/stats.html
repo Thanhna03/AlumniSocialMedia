@@ -1,15 +1,23 @@
 {% extends 'admin/base_site.html' %}
 
 {% block content %}
-    <h1>THỐNG KÊ CÁC CÂU HỎI THEO BÀI KHẢO SÁT</h1>
+    <style>
+        h1 {
+            font-size: 36px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+    <h1>THỐNG KÊ CÁC BÀI POST THEO BÀI KHẢO SÁT</h1>
 
     <ul>
         {% for c in survey_stats %}
-            <li><strong>{{ c.id }} - {{ c.title }}</strong> có {{ c.c }} câu hỏi</li>
+            <li><strong>Chủ đề "{{ c.title }}"</strong> : {{ c.c }} câu hỏi</li>
         {% endfor %}
     </ul>
-
-    <canvas id="myChart"></canvas>
+    <div style="width: 60%">
+        <canvas id="myChart"></canvas>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -17,7 +25,7 @@
         let labels = [];
         let data = [];
 
-        // Lấy dữ liệu từ Django context
+        //Lấy dữ liệu từ Django context
         {% for c in survey_stats %}
             labels.push('{{ c.title }}');
             data.push({{ c.c }});

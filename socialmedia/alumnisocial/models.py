@@ -68,10 +68,26 @@ class PostBaseModel(BaseModel):
     class Meta:
         abstract = True
 
+class Survey(PostBaseModel):
+    title = RichTextUploadingField(null=True)
+    def save(self, *args, **kwargs):
+        # Sử dụng BeautifulSoup để loại bỏ các thẻ không mong muốn
+        if self.title:
+            soup = BeautifulSoup(self.title, "html.parser")
+            # Lấy nội dung mà không có thẻ <p>
+            stripped_title = soup.get_text(separator='\n')
+            self.title = stripped_title
+
+        super(Survey, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
 
 class Post(PostBaseModel):
-    content = RichTextUploadingField(null=True)
-
+    survey = models.ManyToManyField(Survey)
+    content = RichTextField()
+    # created_at = models.DateTimeField(auto_now_add=True)
     # tạo hàm lưu để loại bỏ thẻ <p> khi tạo mới post
     def save(self, *args, **kwargs):
         # Sử dụng BeautifulSoup để loại bỏ các thẻ không mong muốn
@@ -83,12 +99,6 @@ class Post(PostBaseModel):
 
         super(Post, self).save(*args, **kwargs)
 
-
-class Survey(PostBaseModel):
-    title = models.TextField()
-
-    def __str__(self):
-        return self.title
 
 
 class Question(BaseModel):
@@ -113,6 +123,7 @@ class SurveyResponse(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     response_date = models.DateTimeField(auto_now_add=True)
+
 
 
 class QuestionResponse(models.Model):

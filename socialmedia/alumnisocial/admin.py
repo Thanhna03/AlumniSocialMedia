@@ -15,17 +15,10 @@ from django.db.models import Count
 # from ckeditor.widgets import CKEditorWidget
 # from rest_framework import serializers
 
+
+
 class SocialNetworkAppAdminSite(admin.AdminSite):
     site_header = 'AlumniSocialNetwork'
-
-    # def get_urls(self):
-    #     return [path('socialnetwork/', self.stats_view) + super().get_urls()]
-    #
-    # def stats_view(self, request):
-    #     return TemplateResponse(request, 'admin/stats.html', {
-    #         "stats": "TEST"
-    #     })
-    #
 
     def get_urls(self):
         return [
@@ -33,8 +26,8 @@ class SocialNetworkAppAdminSite(admin.AdminSite):
             path('survey_stats/', self.survey_stats_view)
         ] + super().get_urls()
 
-    def stats_view(self, request):
-        survey_stats = Survey.objects.annotate(c=Count('questions')).values('id', 'title', 'c')
+    def stats_view(self, request): #view cua controller
+        survey_stats = Survey.objects.annotate(c=Count('post')).values('id', 'title', 'c')
         type_statistic = request.GET.get('object')
         period = request.GET.get('period')
         year = request.GET.get('year')
@@ -46,36 +39,27 @@ class SocialNetworkAppAdminSite(admin.AdminSite):
         return TemplateResponse(request, 'admin/stats.html', {'stats': stats,
                                                               'period': period,
                                                               "survey_stats": survey_stats
-                                                              })
+                                                              }) #
 
+    #xử lý yêu cầu cho trang thống kê
     def survey_stats_view(self, request):
         survey_id = request.POST.get('survey_id')
-        statistic_data = dao.stats_survey(survey_id)
+        if not survey_id:
+            return TemplateResponse(request, 'admin/stats.html',
+                                    {'error': 'Survey ID is required'})
+
+        statistic_data = dao.stats_survey(survey_id) #lấy dữ liệu để thống kê
+        if not statistic_data or not all(key in statistic_data for key in ['survey', 'text_questions', 'mcq_counts']):
+            return TemplateResponse(request, 'admin/survey_stats.html',
+                                    {'error': 'Invalid survey data'})
 
         return TemplateResponse(request, 'admin/survey_stats.html',
                                 {'survey': statistic_data['survey'],
                                  'text_questions': statistic_data['text_questions'],
-                                 'mcq_counts': statistic_data['multiple_choice_question_counts']})
+                                 'mcq_counts': statistic_data['mcq_counts']})
 
 
 admin.site = SocialNetworkAppAdminSite(name='mysocialmediaapp')
-
-
-# def confirm_student(modeladmin, request, queryset):
-#     for user in queryset:
-#         user.is_active = True
-#         user.save()
-#
-#
-# def reset_password_change_time(modeladmin, request, queryset):
-#     for user in queryset:
-#         user.date_joined = datetime.now()
-#         user.save()
-#
-#
-# reset_password_change_time.short_description = "Reset Password Change Time"
-# confirm_student.short_description = "Confirm student"
-
 
 class AlumniProfileInlineAdmin(admin.StackedInline):
     model = AlumniProfile
@@ -94,6 +78,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class PostForm(forms.ModelForm):
+
     content = forms.CharField(widget=CKEditorUploadingWidget)
 
     class Meta:
@@ -106,10 +91,15 @@ class ImagesInlineAdmin(admin.StackedInline):
 
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'created_date', 'active', 'content', 'user']
+    list_display = ['id', 'user', 'created_date', 'active', 'user', 'get_survey',]
+    search_fields = ('title', 'survey__name')
     inlines = [ImagesInlineAdmin, ]
     form = PostForm
 
+    def get_survey(self, obj):
+        return ", ".join([s.title for s in obj.survey.all()])
+
+    get_survey.short_description = 'Surveys'
 
 class GroupAdmin(admin.ModelAdmin):
     list_display = ['name']

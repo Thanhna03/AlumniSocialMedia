@@ -11,22 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'password', 'email', 'avatar']
-        # # chỉ cho phép tao, ko cần phải hiện mk đã băm
-        # extra_kwargs = {
-        #     'password': {
-        #         'write_only': True
-        #     },
-        # }
-
-    # hàm tạo tk đã băm mk
-    # def create(self, validated_data):
-    #     #băm password
-    #     data = validated_data.copy()
-    #     user = User(**data)
-    #     user.set_password(user.password)
-    #     user.save()
-    #     return user
-
 
 # đã khóa hàm tạo tk, và ẩn password ở UserSerializer
 class UserUpdateDetailSerializer(serializers.ModelSerializer):
@@ -50,33 +34,12 @@ class UserUpdateDetailSerializer(serializers.ModelSerializer):
         user.set_password(user.password)
         user.save()
         return user
-
-
-    # def create(self, validated_data):
-    #     user = User(**validated_data)
-    #     user.set_password(validated_data['password'])
-    #     # người dùng cần phải thực hiện thêm một số bước xác thực trước khi tài khoản được kích hoạt.
-    #     user.is_active = False
-    #     user.save()
-    #
-    #     return user
-
 class UserInteractionSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField()
 
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'avatar']
-
-
-# class FriendShipSerializer(serializers.ModelSerializer):
-#     sender = UserInteractionSerializer()
-#     receiver = UserInteractionSerializer()
-#
-#     class Meta:
-#         model = FriendShip
-#         fields = ['id', 'sender', 'receiver', 'is_accepted']
-#
 
 class ImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
@@ -105,9 +68,8 @@ class PostDetailSerializer(PostSerializer):
             return post.reaction_set.filter(active=True).exists()
 
     class Meta:
-        model = PostSerializer.Meta.model
+        model = Post
         fields = PostSerializer.Meta.fields + ['reacted']
-
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserInteractionSerializer()
